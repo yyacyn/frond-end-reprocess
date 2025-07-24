@@ -25,7 +25,7 @@ const Sidebar = () => {
                 </li>
 
                 <li>
-                    <a href="/dashboard/limbahku" className="flex items-center">
+                    <a href="/dashboard/my-waste" className="flex items-center">
                         <FaTrash className="mr-2" /> My Waste
                     </a>
                 </li>
