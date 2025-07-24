@@ -1,10 +1,59 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ChevronDown, Star, Award, Footprints, ArrowRight, Menu, X } from 'lucide-react';
+import Image from 'next/image';
 
 const ReProcessLanding = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Custom icon components using SVG
+  const ChevronDownIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+
+  const StarIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+    </svg>
+  );
+
+  const AwardIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="8" r="7" stroke="currentColor" strokeWidth="2"/>
+      <path d="M8.21 13.89L7 23L12 20L17 23L15.79 13.88" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
+
+  const FootprintsIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 16V10A4 4 0 0112 10V16A4 4 0 014 16Z" stroke="currentColor" strokeWidth="2"/>
+      <path d="M12 16V10A4 4 0 0120 10V16A4 4 0 0112 16Z" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
+
+  const ArrowRightIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M12 5L19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+
+  const MenuIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="3" y1="18" x2="21" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+
+  const XIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
 
   return (
     <div className="min-h-screen bg-white">
@@ -37,7 +86,7 @@ const ReProcessLanding = () => {
             className="md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <XIcon /> : <MenuIcon />}
           </button>
         </nav>
 
@@ -86,7 +135,7 @@ const ReProcessLanding = () => {
 
         {/* Scroll indicator */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <ChevronDown size={24} />
+          <ChevronDownIcon />
         </div>
       </header>
 
@@ -144,7 +193,7 @@ const ReProcessLanding = () => {
 
           <div className="text-center mt-8">
             <button className="text-emerald-600 font-semibold hover:text-emerald-700 inline-flex items-center">
-              Learn more <ArrowRight size={16} className="ml-1" />
+              Learn more <ArrowRightIcon />
             </button>
           </div>
         </div>
@@ -213,7 +262,7 @@ const ReProcessLanding = () => {
 
           <div className="text-center mt-8">
             <button className="text-emerald-600 font-semibold hover:text-emerald-700 inline-flex items-center">
-              See more wastes <ArrowRight size={16} className="ml-1" />
+              See more wastes <ArrowRightIcon />
             </button>
           </div>
         </div>
@@ -236,7 +285,7 @@ const ReProcessLanding = () => {
               {/* Earn Impact Points */}
               <div className="bg-white text-gray-900 rounded-lg p-6 text-center">
                 <div className="w-12 h-12 bg-yellow-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Star className="w-6 h-6 text-yellow-600" />
+                  <StarIcon />
                 </div>
                 <h3 className="font-semibold mb-2">Earn Impact Points!</h3>
                 <p className="text-sm text-gray-600">
@@ -247,7 +296,7 @@ const ReProcessLanding = () => {
               {/* Unlock Exclusive Badges */}
               <div className="bg-white text-gray-900 rounded-lg p-6 text-center">
                 <div className="w-12 h-12 bg-emerald-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Award className="w-6 h-6 text-emerald-600" />
+                  <AwardIcon />
                 </div>
                 <h3 className="font-semibold mb-2">Unlock Exclusive Badges!</h3>
                 <p className="text-sm text-gray-600">
@@ -258,7 +307,7 @@ const ReProcessLanding = () => {
               {/* See Your Footprints */}
               <div className="bg-white text-gray-900 rounded-lg p-6 text-center">
                 <div className="w-12 h-12 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Footprints className="w-6 h-6 text-green-600" />
+                  <FootprintsIcon />
                 </div>
                 <h3 className="font-semibold mb-2">See Your Footprints!</h3>
                 <p className="text-sm text-gray-600">
@@ -270,7 +319,7 @@ const ReProcessLanding = () => {
 
           <div className="text-center mt-12">
             <button className="bg-emerald-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-emerald-600 transition-colors inline-flex items-center">
-              Earn now! <ArrowRight size={16} className="ml-2" />
+              Earn now! <ArrowRightIcon />
             </button>
           </div>
         </div>
@@ -283,7 +332,7 @@ const ReProcessLanding = () => {
             Don't just discard, Re:Process! Let's build a more sustainable place for everyone, one smart action at a time.
           </h2>
           <button className="bg-emerald-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-emerald-400 transition-colors inline-flex items-center mt-8">
-            Let's do it now! <ArrowRight size={16} className="ml-2" />
+            Let's do it now! <ArrowRightIcon />
           </button>
         </div>
       </section>
