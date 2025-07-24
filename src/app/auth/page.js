@@ -27,7 +27,7 @@ export default function Login() {
             console.log(pb.authStore.token);
             console.log(pb.authStore.record.id);
             
-            window.location.href = '/dashboard';
+            window.location.href = '/dashboard/home';
             
         } catch (err) {
             setError('Email atau password salah');
@@ -107,7 +107,7 @@ export default function Login() {
             });
 
             console.log('Google auth success:', authData);
-            window.location.href = '/dashboard';
+            window.location.href = '/dashboard/home';
             
         } catch (err) {
             console.error('Google auth error:', err);
