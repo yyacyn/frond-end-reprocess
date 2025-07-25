@@ -6,7 +6,7 @@ import PocketBase from "pocketbase"
 
 const pb = new PocketBase("http://202.10.47.143:8090")
 
-export default function ReducePage() {
+export default function ReduceContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const wasteId = searchParams.get("id")
@@ -582,5 +582,13 @@ export default function ReducePage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function ReducePage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <RecycleContent />
+        </Suspense>
     )
 }
