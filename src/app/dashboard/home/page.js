@@ -2,20 +2,30 @@
 import { useState, useEffect } from "react"
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from "recharts"
 import Sidebar from "../components/sidebar"
+import PocketBase from 'pocketbase';
+import { FaMedal } from "react-icons/fa";
+
+const pb = new PocketBase("http://172.19.79.163:8090");
 
 const Dashboard = () => {
 
     // Theme state
     const [theme, setTheme] = useState("dark")
+    const [user, setUser] = useState(null);
 
-    // Initialize theme from local storage when component mounts
+    // Initialize theme and user data
     useEffect(() => {
-        // Check for saved theme preference or use system preference
+        // Set theme
         const savedTheme = localStorage.getItem("theme") ||
-            (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")
-        setTheme(savedTheme)
-        document.documentElement.setAttribute("data-theme", savedTheme)
-    }, [])
+            (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+        setTheme(savedTheme);
+        document.documentElement.setAttribute("data-theme", savedTheme);
+
+        // Get logged-in user
+        if (pb.authStore.isValid) {
+            setUser(pb.authStore.model); // Retrieve user data from authStore
+        }
+    }, []);
 
     // Theme toggle handler
     const toggleTheme = () => {
@@ -98,9 +108,13 @@ const Dashboard = () => {
             <div className="flex-1 overflow-y-auto bg-gradient-to-br from-base-200 to-base-300 p-6">
                 <div className="max-w-7xl mx-auto space-y-8">
                     {/* Header */}
-                    <div className="text-center space-y-4">
-                        <h1 className="text-5xl font-bold text-base-content">Waste Management Dashboard</h1>
-                        <p className="text-xl text-base-content/70">Track your environmental impact and waste transactions</p>
+                    <div className="flex justify-between items-center w-full space-y-4">
+                        <h1 className="text-2xl font-bold text-base-content">
+                            Welcome, {user?.name || user?.email || "User"}!
+                        </h1>
+                        <p className="text-xl text-base-content/70 flex items-center gap-2">
+                            My points <FaMedal /> <span className="font-semibold text-primary">1234</span>
+                        </p>
                     </div>
 
                     {/* Tracker Section - Using DaisyUI Stats */}
@@ -331,7 +345,7 @@ const Dashboard = () => {
                     </div>
 
                     {/* Summary Cards */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="card bg-gradient-to-r from-success to-success-focus text-success-content shadow-2xl">
                             <div className="card-body">
                                 <div className="flex items-center justify-between">
@@ -361,7 +375,7 @@ const Dashboard = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
 
                     {/* Additional Insights */}
                     {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
