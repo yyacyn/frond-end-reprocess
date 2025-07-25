@@ -13,7 +13,7 @@ const Sidebar = () => {
     const isActive = (path) => pathname === path ? "bg-[#2DC653] text-primary-content" : "";
 
     return (
-        <div className="h-screen w-64 bg-base-200 shadow-lg flex flex-col">
+        <div className="h-screen w-64 bg-[#ffffff] flex flex-col">
             {/* Sidebar Header */}
             <div className="p-4 bg-[#2DC653] text-primary-content text-xl font-bold">
                 Dashboard
