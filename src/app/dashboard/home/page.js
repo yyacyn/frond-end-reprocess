@@ -5,7 +5,9 @@ import Sidebar from "../components/sidebar"
 import PocketBase from 'pocketbase';
 import { FaMedal } from "react-icons/fa";
 
-const pb = new PocketBase("http://172.19.79.163:8090");
+// const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
+// const pb = new PocketBase('http://172.19.79.163:8090');
+const pb = new PocketBase('http://202.10.47.143:8090');
 
 const Dashboard = () => {
 
@@ -41,34 +43,34 @@ const Dashboard = () => {
             value: "23 kg",
             label: "Waste Recycled",
             description: "This month",
-            statColor: "stat-value text-success",
-            cardColor: "bg-success/10 border-success/20",
+            statColor: "stat-value text-emerald-600",
+            cardColor: "bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-200",
         },
         {
             icon: "⬇️",
             value: "45 kg",
             label: "Waste Reduced",
             description: "This month",
-            statColor: "stat-value text-success",
-            cardColor: "bg-success/10 border-success/20",
+            statColor: "stat-value text-blue-600",
+            cardColor: "bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200",
         },
         {
             icon: "🪴",
             value: "24 kg",
             label: "Waste Reused",
             description: "This month",
-            statColor: "stat-value text-success",
-            cardColor: "bg-success/10 border-success/20",
+            statColor: "stat-value text-amber-600",
+            cardColor: "bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-200",
         },
         {
             icon: "🏆",
             value: "12",
             label: "Task Completed",
             description: "This month",
-            statColor: "stat-value text-success",
-            cardColor: "bg-success/10 border-success/20",
+            statColor: "stat-value text-purple-600",
+            cardColor: "bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200",
         },
-    ]
+    ];
 
     const timelineData = [
         { date: "2025-07-15", sold: 25, bought: 15, day: "Jul 15" },
@@ -113,14 +115,14 @@ const Dashboard = () => {
                             Welcome, {user?.name || user?.email || "User"}!
                         </h1>
                         <p className="text-xl text-base-content/70 flex items-center gap-2">
-                            My points <FaMedal /> <span className="font-semibold text-primary">1234</span>
+                            My points <FaMedal /> <span className="font-semibold text-[#2DC653]">1234</span>
                         </p>
                     </div>
 
                     {/* Tracker Section - Using DaisyUI Stats */}
                     <div className="stats stats-vertical lg:stats-horizontal shadow-2xl w-full bg-base-100">
                         {trackerData.map((item, index) => (
-                            <div key={index} className={`stat ${item.cardColor} border-2`}>
+                            <div key={index} className={`stat ${item.cardColor}`}>
                                 <div className="stat-figure text-6xl">{item.icon}</div>
                                 <div className="stat-title text-base-content/70 font-semibold">{item.label}</div>
                                 <div className={`${item.statColor} text-4xl font-bold`}>{item.value}</div>
@@ -255,14 +257,14 @@ const Dashboard = () => {
                                                 stroke: "#10b981",
                                                 strokeWidth: 4,
                                                 r: 10,
-                                                
+
                                             }}
                                             activeDot={{
                                                 r: 14,
                                                 stroke: "#10b981",
                                                 strokeWidth: 5,
                                                 fill: "#ffffff",
-                                                
+
                                                 style: {
                                                     boxShadow: "0 0 20px #10b981",
                                                 },
@@ -271,7 +273,7 @@ const Dashboard = () => {
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
                                             connectNulls={true}
-                                            
+
                                         />
 
                                         {/* Bought line with enhanced styling */}
@@ -285,14 +287,14 @@ const Dashboard = () => {
                                                 stroke: "#3b82f6",
                                                 strokeWidth: 4,
                                                 r: 10,
-                                                
+
                                             }}
                                             activeDot={{
                                                 r: 14,
                                                 stroke: "#3b82f6",
                                                 strokeWidth: 5,
                                                 fill: "#ffffff",
-                                                
+
                                                 style: {
                                                     boxShadow: "0 0 20px #3b82f6",
                                                 },
@@ -301,7 +303,7 @@ const Dashboard = () => {
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
                                             connectNulls={true}
-                                            
+
                                         />
                                     </LineChart>
                                 </ResponsiveContainer>

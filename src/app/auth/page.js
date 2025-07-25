@@ -5,6 +5,8 @@ import PocketBase from 'pocketbase';
 
 // const pb = new PocketBase('http://202.10.47.143:8090');
 const pb = new PocketBase('http://172.19.79.163:8090');
+// const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
+
 
 export default function Login() {
     const [activeTab, setActiveTab] = useState('login'); // 'login' or 'register'
