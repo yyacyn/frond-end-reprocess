@@ -4,7 +4,9 @@ import { useState } from 'react';
 import PocketBase from 'pocketbase';
 
 // const pb = new PocketBase('http://202.10.47.143:8090');
-const pb = new PocketBase('http://172.19.79.163:8090');
+const pb = new PocketBase('http://202.10.47.143:8090');
+// const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
+
 
 export default function Login() {
     const [activeTab, setActiveTab] = useState('login'); // 'login' or 'register'
@@ -12,6 +14,7 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [name, setName] = useState('');
+    const [role, setRole] = useState('household'); // Add role state
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -61,7 +64,8 @@ export default function Login() {
                 "email": email,
                 "password": password,
                 "passwordConfirm": confirmPassword,
-                "name": name
+                "name": name,
+                "role": role // Add role to registration data
             };
 
             const record = await pb.collection('users').create(data);
@@ -74,6 +78,7 @@ export default function Login() {
             setPassword('');
             setConfirmPassword('');
             setName('');
+            setRole('household'); // Reset role to default
             setTimeout(() => {
                 setActiveTab('login');
                 setSuccess('');
@@ -129,6 +134,7 @@ export default function Login() {
         setPassword('');
         setConfirmPassword('');
         setName('');
+        setRole('household'); // Reset role when switching tabs
     };
 
     return (
@@ -293,6 +299,22 @@ export default function Login() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
                                 />
+                            </div>
+
+                            {/* Role Selection */}
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">Jenis Akun</span>
+                                </label>
+                                <select
+                                    className="select select-bordered w-full"
+                                    value={role}
+                                    onChange={(e) => setRole(e.target.value)}
+                                    required
+                                >
+                                    <option value="household">Rumah Tangga</option>
+                                    <option value="business">Bisnis</option>
+                                </select>
                             </div>
 
                             {/* Password Input */}

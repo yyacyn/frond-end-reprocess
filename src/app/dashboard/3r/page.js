@@ -2,12 +2,18 @@
 import { useEffect, useState } from "react"
 import PocketBase from "pocketbase"
 import Sidebar from "../components/sidebar"
+import { FaRecycle } from "react-icons/fa"
+
+// const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
+const pb = new PocketBase('http://202.10.47.143:8090');
+// const pb = new PocketBase('http://172.19.79.163:8090');
+
 
 const ThreeRPage = () => {
     const [wasteData, setWasteData] = useState([])
     const [loading, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [is3RModalOpen, setIs3RModalOpen] = useState(false);
     const [currentEditItem, setCurrentEditItem] = useState(null);
     const [formData, setFormData] = useState({
         name: "",
@@ -19,8 +25,6 @@ const ThreeRPage = () => {
         images: null,
     })
     const [submitting, setSubmitting] = useState(false)
-
-    const pb = new PocketBase("http://172.19.79.163:8090")
 
     // Set light mode by default
     useEffect(() => {
@@ -49,65 +53,6 @@ const ThreeRPage = () => {
             console.error("Error fetching data:", error);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value, type, checked, files } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: type === "checkbox" ? checked : type === "file" ? Array.from(files) : value, // Handle multiple files
-        }));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setSubmitting(true);
-
-        try {
-            const formDataToSend = new FormData();
-            Object.keys(formData).forEach((key) => {
-                if (key === "images" && formData[key]?.length > 0) {
-                    formData[key].forEach((file) => {
-                        formDataToSend.append(key, file); // Append multiple images
-                    });
-                } else {
-                    formDataToSend.append(key, formData[key]);
-                }
-            });
-
-            // Add the user ID to the form data
-            formDataToSend.append("user", pb.authStore.model?.id);
-
-            await pb.collection("wastes").create(formDataToSend);
-
-            // Reset form and refresh data
-            setFormData({
-                name: "",
-                description: "",
-                category: "",
-                price_per_kg: "",
-                quantity: "",
-                on_sale: false,
-                images: null,
-            });
-            setIsModalOpen(false);
-            fetchData();
-
-            // Show success message
-            document.getElementById("success-toast").classList.remove("hidden");
-            setTimeout(() => {
-                document.getElementById("success-toast").classList.add("hidden");
-            }, 3000);
-        } catch (error) {
-            console.error("Error creating waste:", error);
-            // Show error message
-            document.getElementById("error-toast").classList.remove("hidden");
-            setTimeout(() => {
-                document.getElementById("error-toast").classList.add("hidden");
-            }, 3000);
-        } finally {
-            setSubmitting(false);
         }
     };
 
@@ -153,70 +98,7 @@ const ThreeRPage = () => {
             on_sale: item.on_sale,
             images: null, // Images won't be pre-filled
         });
-        setIsEditModalOpen(true);
-    };
-
-    // Fixed handleEditSubmit function
-    const handleEditSubmit = async (e) => {
-        e.preventDefault();
-        setSubmitting(true);
-
-        try {
-            const formDataToSend = new FormData();
-            Object.keys(formData).forEach((key) => {
-                if (key === "images" && formData[key]?.length > 0) {
-                    formData[key].forEach((file) => {
-                        formDataToSend.append(key, file);
-                    });
-                } else if (formData[key] !== null) {
-                    formDataToSend.append(key, formData[key]);
-                }
-            });
-
-            await pb.collection("wastes").update(currentEditItem.id, formDataToSend);
-
-            // Show success toast
-            document.getElementById("success-edit-toast").classList.remove("hidden");
-            setTimeout(() => {
-                document.getElementById("success-edit-toast").classList.add("hidden");
-            }, 3000);
-
-            setIsEditModalOpen(false);
-            fetchData();
-        } catch (error) {
-            console.error("Error updating waste:", error);
-            // Show error toast
-            document.getElementById("error-toast").classList.remove("hidden");
-            setTimeout(() => {
-                document.getElementById("error-toast").classList.add("hidden");
-            }, 3000);
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    // Fixed handleDelete function
-    const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this item?")) return;
-
-        try {
-            await pb.collection("wastes").delete(id);
-
-            // Show success toast
-            document.getElementById("success-delete-toast").classList.remove("hidden");
-            setTimeout(() => {
-                document.getElementById("success-delete-toast").classList.add("hidden");
-            }, 3000);
-
-            fetchData();
-        } catch (error) {
-            console.error("Error deleting waste:", error);
-            // Show error toast
-            document.getElementById("error-toast").classList.remove("hidden");
-            setTimeout(() => {
-                document.getElementById("error-toast").classList.add("hidden");
-            }, 3000);
-        }
+        setIs3RModalOpen(true);
     };
 
     if (loading) {
@@ -351,21 +233,10 @@ const ThreeRPage = () => {
 
                                                     {/* Actions */}
                                                     <td>
-                                                        <div className="flex justify-center gap-2">
+                                                        <div className="flex justify-center items-center gap-2">
                                                             <button
-                                                                className="btn btn-xs btn-outline btn-primary"
-                                                                onClick={() => handleEdit(item)}
-                                                            >
-                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                                                    />
-                                                                </svg>
-                                                                Edit
-                                                            </button>
+                                                                className="btn btn-s btn-outline btn-primary items-center px-5 "
+                                                                onClick={() => handleEdit(item)}><FaRecycle />3R</button>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -386,6 +257,85 @@ const ThreeRPage = () => {
                                             </tr>
                                         </tfoot>
                                     </table>
+                                </div>
+                            )}
+
+                            {/* 3R Modal */}
+                            {is3RModalOpen && (
+                                <div className="modal modal-open">
+                                    <div className="modal-box w-11/12 max-w-2xl">
+                                        <h3 className="font-bold text-2xl mb-6 text-center text-[#000000]">What do you want to do with your waste?</h3>
+                                        <div className="flex flex-col md:flex-row justify-center gap-3 mb-6">
+                                            {/* Reduce Button */}
+                                            <button
+                                                className="btn btn-primary"
+                                                onClick={() => {
+                                                    setIs3RModalOpen(false);
+                                                    window.location.href = `/dashboard/3r/reduce?id=${currentEditItem.id}&action=reduce`;
+                                                }}
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                    Reduce
+                                                </span>
+                                            </button>
+
+                                            {/* Reuse Button */}
+                                            <button
+                                                className="btn btn-secondary"
+                                                onClick={() => {
+                                                    setIs3RModalOpen(false);
+                                                    window.location.href = `/dashboard/3r/reuse?id=${currentEditItem.id}&action=reuse`;
+                                                }}
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                    </svg>
+                                                    Reuse
+                                                </span>
+                                            </button>
+
+                                            {/* Recycle Button */}
+                                            <button
+                                                className="btn btn-accent"
+                                                onClick={() => {
+                                                    setIs3RModalOpen(false);
+                                                    window.location.href = `/dashboard/3r/recycle?id=${currentEditItem.id}&action=recycle`;
+                                                }}
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <FaRecycle className="w-4 h-4" />
+                                                    Recycle
+                                                </span>
+                                            </button>
+
+                                            {/* Cancel Button */}
+                                            <button
+                                                className="btn bg-[#FF0000] text-[#ffffff] hover:bg-[#FF0000]/90"
+                                                onClick={() => {
+                                                    setIs3RModalOpen(false);
+                                                }}
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                    Cancel
+                                                </span>
+                                            </button>
+                                        </div>
+
+                                        {/* Loading indicator when fetching recommendations */}
+                                        {loading && (
+                                            <div className="flex justify-center items-center mt-4">
+                                                <div className="loading loading-spinner loading-md text-primary"></div>
+                                                <span className="ml-2 text-base-content">Generating recommendations...</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>

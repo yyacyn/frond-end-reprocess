@@ -3,6 +3,10 @@ import { useEffect, useState } from "react"
 import PocketBase from "pocketbase"
 import Sidebar from "../components/sidebar"
 
+// const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
+const pb = new PocketBase('http://202.10.47.143:8090');
+// const pb = new PocketBase('http://172.19.79.163:8090');
+
 const MyWaste = () => {
     const [wasteData, setWasteData] = useState([])
     const [loading, setLoading] = useState(true)
@@ -19,8 +23,6 @@ const MyWaste = () => {
         images: null,
     })
     const [submitting, setSubmitting] = useState(false)
-
-    const pb = new PocketBase("http://172.19.79.163:8090")
 
     // Set light mode by default
     useEffect(() => {
