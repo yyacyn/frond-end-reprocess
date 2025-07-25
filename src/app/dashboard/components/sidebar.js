@@ -67,12 +67,12 @@ const Sidebar = () => {
                         </ul>
                     )}
                 </li> */}
-
+{/* 
                 <li>
                     <a href="/dashboard/sell" className="flex items-center">
                         <FaShoppingCart className="mr-2" /> Sell
                     </a>
-                </li>
+                </li> */}
                 <li>
                     <a href="/dashboard/profile" className="flex items-center">
                         <FaUser className="mr-2" /> Profile
