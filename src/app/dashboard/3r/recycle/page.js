@@ -6,7 +6,7 @@ import PocketBase from "pocketbase"
 
 const pb = new PocketBase("http://202.10.47.143:8090")
 
-export default function RecycleContent() {
+export default function RecyclePage() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const wasteId = searchParams.get("id")
@@ -582,13 +582,5 @@ export default function RecycleContent() {
                 </div>
             </div>
         </div>
-    )
-}
-
-export default function RecyclePage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <RecycleContent />
-        </Suspense>
     )
 }
