@@ -56,88 +56,70 @@ const ReProcessLanding = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="bg-emerald-600 text-white relative">
-        <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-              <div className="w-4 h-4 bg-white rounded-full"></div>
+      <div className='flex justify-center'>
+        <div className="navbar bg-base-100 shadow-lg w-3/4 fixed top-5 z-50 rounded-full px-3">
+        <div className="navbar-start">
+          <div className="dropdown">
+            <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" /> </svg>
             </div>
-            <span className="text-xl font-bold">Re:Process</span>
+            <ul
+              tabIndex={0}
+              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
+              <li><a>Item 1</a></li>
+              <li>
+                <a>Parent</a>
+                <ul className="p-2">
+                  <li><a>Submenu 1</a></li>
+                  <li><a>Submenu 2</a></li>
+                </ul>
+              </li>
+              <li><a>Item 3</a></li>
+            </ul>
           </div>
+          <a className="btn btn-ghost text-xl">daisyUI</a>
+        </div>
+        <div className="navbar-center hidden lg:flex">
+          <ul className="menu menu-horizontal px-1">
+            <li><a>Item 1</a></li>
+            <li>
+              <details>
+                <summary>Parent</summary>
+                <ul className="p-2">
+                  <li><a>Submenu 1</a></li>
+                  <li><a>Submenu 2</a></li>
+                </ul>
+              </details>
+            </li>
+            <li><a>Item 3</a></li>
+          </ul>
+        </div>
+        <div className="navbar-end">
+          <a href='auth' className="btn rounded-full btn-success">Login</a>
+        </div>
+      </div>
+      </div>
+
+      {/* Hero Section */}
+
+
+      <section className="hero text-white">
+       {/* Hero Section */}
+        <div 
+          className=' w-full relative top-0 h-[700px]'
+          style={{
+            backgroundImage: 'url("hero.png")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
           
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <a href="#" className="hover:text-emerald-200 transition-colors">Home</a>
-            <a href="#" className="hover:text-emerald-200 transition-colors">3R</a>
-            <a href="#" className="hover:text-emerald-200 transition-colors">Buy/Sell</a>
-            <a href="#" className="hover:text-emerald-200 transition-colors">Track</a>
-            <button className="bg-emerald-500 px-4 py-2 rounded-lg hover:bg-emerald-400 transition-colors">
-              Login
-            </button>
-            <button className="border border-white px-4 py-2 rounded-lg hover:bg-white hover:text-emerald-600 transition-colors">
-              Register
-            </button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <XIcon /> : <MenuIcon />}
-          </button>
-        </nav>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-emerald-600 border-t border-emerald-500 z-50">
-            <div className="container mx-auto px-4 py-4 space-y-4">
-              <a href="#" className="block hover:text-emerald-200">Home</a>
-              <a href="#" className="block hover:text-emerald-200">3R</a>
-              <a href="#" className="block hover:text-emerald-200">Buy/Sell</a>
-              <a href="#" className="block hover:text-emerald-200">Track</a>
-              <button className="w-full bg-emerald-500 px-4 py-2 rounded-lg">Login</button>
-              <button className="w-full border border-white px-4 py-2 rounded-lg">Register</button>
-            </div>
-          </div>
-        )}
-
-        {/* Hero Section */}
-        <div className="container mx-auto px-4 py-16 flex flex-col lg:flex-row items-center">
-          <div className="lg:w-1/2 mb-8 lg:mb-0">
-            <h1 className="text-4xl lg:text-5xl font-bold mb-4">
-              Your Waste, Reimagined.
-            </h1>
-            <p className="text-xl mb-6 text-emerald-100">
-              Turn Trash Into Treasure. Connect, Sell, & Transform Waste with Re:Process.
-            </p>
-          </div>
-          <div className="lg:w-1/2 flex justify-center">
-            <div className="relative">
-              <div className="w-64 h-48 bg-gray-200 rounded-lg overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-300 to-gray-100"></div>
-                <div className="absolute top-4 left-4 right-4">
-                  <div className="flex space-x-2">
-                    {[...Array(8)].map((_, i) => (
-                      <div key={i} className="w-6 h-20 bg-amber-200 rounded-sm transform rotate-2" style={{marginLeft: i * 2}}></div>
-                    ))}
-                  </div>
-                </div>
-                <div className="absolute bottom-4 right-4 w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
-                  <div className="text-white text-xs font-bold">♻</div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
+      </section>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <ChevronDownIcon />
-        </div>
-      </header>
 
       {/* 3R Section */}
       <section className="py-16 bg-gray-50">
