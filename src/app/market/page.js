@@ -1,21 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MapPin, Search, Filter } from 'lucide-react';
+import { MapPin, Search, X, Menu } from 'lucide-react';
 import PocketBase from 'pocketbase';
 
 export default function MarketplacePage() {
     const [companies, setCompanies] = useState([]);
     const [filteredCompanies, setFilteredCompanies] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [selectedCategories, setSelectedCategories] = useState([]);
     const [userLocation, setUserLocation] = useState(null);
     const [loading, setLoading] = useState(true);
     const [map, setMap] = useState(null);
     const [markers, setMarkers] = useState([]);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Initialize PocketBase
-    const pb = new PocketBase('http://202.10.47.143:8090/'); // Adjust URL as needed
+    const pb = new PocketBase('http://202.10.47.143:8090');
     
     // Mock data fallback
     const mockData = {
@@ -39,7 +40,7 @@ export default function MarketplacePage() {
         ]
     };
 
-    const categories = ['all', 'plastik', 'kertas', 'logam', 'organik'];
+    const categories = ['plastik', 'kertas', 'logam', 'organik', 'elektronik', 'kaca', 'tekstil'];
 
     // Load Leaflet CSS
     useEffect(() => {
@@ -62,15 +63,12 @@ export default function MarketplacePage() {
             const script = document.createElement('script');
             script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
             script.onload = () => {
-                // Add a small delay to ensure DOM is ready
                 setTimeout(initLeafletMap, 100);
             };
             document.head.appendChild(script);
         };
 
-        // Only load Leaflet after component has mounted and DOM is ready
         const timer = setTimeout(loadLeaflet, 100);
-        
         return () => clearTimeout(timer);
     }, []);
 
@@ -85,7 +83,6 @@ export default function MarketplacePage() {
     }, []);
 
     const initLeafletMap = () => {
-        // Check if Leaflet is loaded, map doesn't exist, and DOM element exists
         if (!window.L || map || !document.getElementById('map')) {
             return;
         }
@@ -100,7 +97,6 @@ export default function MarketplacePage() {
             setMap(mapInstance);
         } catch (error) {
             console.error('Error initializing map:', error);
-            // Retry after a short delay if initialization fails
             setTimeout(() => {
                 if (!map && document.getElementById('map')) {
                     initLeafletMap();
@@ -118,7 +114,6 @@ export default function MarketplacePage() {
                     sort: '-created',
                 });
                 
-                // Process records to ensure consistent data structure
                 const processedRecords = records.map(record => ({
                     ...record,
                     location: record.location || { lat: -6.208763, lon: 106.845599 },
@@ -131,7 +126,6 @@ export default function MarketplacePage() {
                 setFilteredCompanies(processedRecords);
             } catch (error) {
                 console.error('Error fetching data:', error);
-                
                 setCompanies(mockData.items);
                 setFilteredCompanies(mockData.items);
             } finally {
@@ -145,7 +139,6 @@ export default function MarketplacePage() {
     // Update map markers when filtered companies change
     useEffect(() => {
         if (map && window.L && filteredCompanies.length > 0) {
-            // Clear existing markers
             markers.forEach(marker => {
                 if (map.hasLayer(marker)) {
                     map.removeLayer(marker);
@@ -153,7 +146,6 @@ export default function MarketplacePage() {
             });
             
             const newMarkers = filteredCompanies.map(company => {
-                // Create custom green icon
                 const greenIcon = window.L.divIcon({
                     className: 'custom-div-icon',
                     html: '<div style="background-color: #16a34a; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #15803d; display: flex; align-items: center; justify-content: center;"><div style="background-color: white; width: 8px; height: 8px; border-radius: 50%;"></div></div>',
@@ -165,7 +157,6 @@ export default function MarketplacePage() {
                     icon: greenIcon
                 }).addTo(map);
 
-                // Create popup content
                 const popupContent = `
                     <div style="padding: 8px; min-width: 200px;">
                         <h3 style="margin: 0 0 8px 0; font-weight: 600; color: #166534;">${company.name}</h3>
@@ -182,14 +173,12 @@ export default function MarketplacePage() {
                 `;
 
                 marker.bindPopup(popupContent);
-
                 return marker;
             });
 
             setMarkers(newMarkers);
         }
         
-        // Cleanup function
         return () => {
             if (map && markers.length > 0) {
                 markers.forEach(marker => {
@@ -203,7 +192,7 @@ export default function MarketplacePage() {
 
     useEffect(() => {
         filterCompanies();
-    }, [searchTerm, selectedCategory, companies, userLocation]);
+    }, [searchTerm, selectedCategories, companies, userLocation]);
 
     const getCurrentLocation = () => {
         if (navigator.geolocation) {
@@ -218,7 +207,6 @@ export default function MarketplacePage() {
                     if (map && window.L) {
                         map.setView([location.lat, location.lon], 12);
                         
-                        // Create custom red icon for user location
                         const redIcon = window.L.divIcon({
                             className: 'custom-div-icon',
                             html: '<div style="background-color: #dc2626; width: 16px; height: 16px; border-radius: 50%; border: 2px solid #ffffff; box-shadow: 0 0 0 2px #dc2626;"></div>',
@@ -254,12 +242,18 @@ export default function MarketplacePage() {
         let filtered = companies.filter(company => {
             const name = company.name || '';
             const address = company.address || '';
-            
-            const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                 address.toLowerCase().includes(searchTerm.toLowerCase());
-            
             const wasteTypes = Array.isArray(company.waste_accept) ? company.waste_accept : [];
-            const matchesCategory = selectedCategory === 'all' || wasteTypes.includes(selectedCategory);
+            
+            // Search in name, address, and waste categories
+            const searchLower = searchTerm.toLowerCase();
+            const matchesSearch = searchTerm === '' || 
+                                 name.toLowerCase().includes(searchLower) ||
+                                 address.toLowerCase().includes(searchLower) ||
+                                 wasteTypes.some(waste => waste.toLowerCase().includes(searchLower));
+            
+            // Filter by selected categories
+            const matchesCategory = selectedCategories.length === 0 || 
+                                   selectedCategories.some(category => wasteTypes.includes(category));
             
             return matchesSearch && matchesCategory;
         });
@@ -282,9 +276,22 @@ export default function MarketplacePage() {
         setFilteredCompanies(filtered);
     };
 
+    const toggleCategory = (category) => {
+        setSelectedCategories(prev => 
+            prev.includes(category) 
+                ? prev.filter(c => c !== category)
+                : [...prev, category]
+        );
+    };
+
+    const clearAllFilters = () => {
+        setSearchTerm('');
+        setSelectedCategories([]);
+    };
+
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100">
+            <div className="min-h-screen flex items-center justify-center bg-slate-100">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto mb-4"></div>
                     <div className="text-xl text-green-800">Memuat data...</div>
@@ -294,53 +301,116 @@ export default function MarketplacePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
-            <div className="max-w-7xl mx-auto p-4">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-green-800 mb-2">🌱 Marketplace Limbah</h1>
-                    <p className="text-green-600">Temukan partner daur ulang terpercaya di sekitar Anda</p>
+        <div className="min-h-screen bg-slate-100">
+
+            <div className="navbar bg-base-100/95 backdrop-blur-sm fixed top-0 z-50 shadow-lg ">
+                <div className="navbar-start">
+                <div className="dropdown">
+                    <div 
+                    tabIndex={0} 
+                    role="button" 
+                    className="btn btn-ghost lg:hidden"
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    >
+                    {mobileMenuOpen ? <X /> : <Menu />}
+                    </div>
+                    <ul
+                    tabIndex={0}
+                    className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow-lg">
+                    <li><a onClick={() => smoothScroll('hero')}>Home</a></li>
+                    <li><a onClick={() => smoothScroll('features')}>3R Features</a></li>
+                    <li><a onClick={() => smoothScroll('marketplace')}>Marketplace</a></li>
+                    <li><a onClick={() => smoothScroll('impact')}>Impact</a></li>
+                    </ul>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-success rounded-full flex items-center justify-center">
+                    <div className="w-4 h-4 bg-white rounded-full"></div>
+                    </div>
+                    <span className="text-xl font-bold text-success">Re:Process</span>
+                </div>
                 </div>
                 
+                <div className="navbar-center hidden lg:flex">
+                <ul className="menu menu-horizontal px-1">
+                    <li><a onClick={() => smoothScroll('hero')} className="hover:text-success">Home</a></li>
+                    <li><a onClick={() => smoothScroll('features')} className="hover:text-success">3R Features</a></li>
+                    <li><a onClick={() => smoothScroll('marketplace')} className="hover:text-success">Marketplace</a></li>
+                    <li><a onClick={() => smoothScroll('impact')} className="hover:text-success">Impact</a></li>
+                </ul>
+                </div>
+                
+                <div className="navbar-end">
+                <a href="/auth" className="btn btn-success text-white rounded-full">Login</a>
+                </div>
+            </div>
+            <div className="max-w-7xl mx-auto p-4">
+                
                 {/* Search and Filter Bar */}
-                <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-green-100">
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-3 h-5 w-5 text-green-500" />
-                            <input
-                                type="text"
-                                placeholder="Cari perusahaan atau lokasi..."
-                                className="w-full pl-10 pr-4 py-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+                <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-green-100 mt-20">
+                    <div className="flex flex-col gap-4">
+                        {/* Search Input */}
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <div className="flex-1 relative">
+                                <Search className="absolute left-3 top-3 h-5 w-5 text-green-500" />
+                                <input
+                                    type="text"
+                                    placeholder="Cari perusahaan, lokasi, atau jenis limbah..."
+                                    className="w-full pl-10 pr-4 py-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={getCurrentLocation}
+                                    className={`flex items-center gap-2 px-6 py-3 rounded-lg border transition-all ${
+                                        userLocation 
+                                            ? 'bg-green-100 border-green-300 text-green-700 shadow-sm' 
+                                            : 'bg-white border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300'
+                                    }`}
+                                >
+                                    <MapPin className="h-5 w-5" />
+                                    {userLocation ? 'Lokasi Aktif' : 'Aktifkan Lokasi'}
+                                </button>
+
+                                {(searchTerm || selectedCategories.length > 0) && (
+                                    <button
+                                        onClick={clearAllFilters}
+                                        className="flex items-center gap-2 px-4 py-3 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-all"
+                                    >
+                                        <X className="h-4 w-4" />
+                                        Clear
+                                    </button>
+                                )}
+                            </div>
                         </div>
+
+                                
                         
-                        <div className="relative">
-                            <Filter className="absolute left-3 top-3 h-5 w-5 text-green-500" />
-                            <select
-                                className="pl-10 pr-8 py-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors bg-white"
-                                value={selectedCategory}
-                                onChange={(e) => setSelectedCategory(e.target.value)}
-                            >
-                                {categories.map(category => (
-                                    <option key={category} value={category}>
-                                        {category === 'all' ? 'Semua Kategori' : category.charAt(0).toUpperCase() + category.slice(1)}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        
-                        <button
-                            onClick={getCurrentLocation}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-lg border transition-all ${
-                                userLocation 
-                                    ? 'bg-green-100 border-green-300 text-green-700 shadow-sm' 
-                                    : 'bg-white border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300'
-                            }`}
-                        >
-                            <MapPin className="h-5 w-5" />
-                            {userLocation ? 'Lokasi Aktif' : 'Aktifkan Lokasi'}
-                        </button>
+
+                        {/* Active Filters Display */}
+                        {(searchTerm || selectedCategories.length > 0) && (
+                            <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                                <div className="text-sm text-green-700 mb-2">Filter aktif:</div>
+                                <div className="flex flex-wrap gap-2">
+                                    {searchTerm && (
+                                        <span className="bg-white px-3 py-1 rounded-full text-xs border border-green-300 text-green-800">
+                                            Pencarian: "{searchTerm}"
+                                        </span>
+                                    )}
+                                    {selectedCategories.map(category => (
+                                        <span key={category} className="bg-green-600 text-white px-3 py-1 rounded-full text-xs">
+                                            {category}
+                                        </span>
+                                    ))}
+                                </div>
+                                <div className="text-xs text-green-600 mt-2">
+                                    Menampilkan {filteredCompanies.length} dari {companies.length} perusahaan
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -403,9 +473,9 @@ export default function MarketplacePage() {
                                     </div>
                                 </div>
                                 
-                                <button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-4 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
-                                    💬 Hubungi Perusahaan
-                                </button>
+                                        <button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-4 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
+                                            💬 Reach Out
+                                        </button>
                             </div>
                         </div>
                     ))}

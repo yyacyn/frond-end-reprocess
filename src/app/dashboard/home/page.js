@@ -12,7 +12,7 @@ const pb = new PocketBase('http://202.10.47.143:8090');
 const Dashboard = () => {
 
     // Theme state
-    const [theme, setTheme] = useState("dark")
+    const [theme, setTheme] = useState("light")
     const [user, setUser] = useState(null);
 
     // Initialize theme and user data

@@ -140,16 +140,15 @@ export default function Login() {
     return (
         <div className="min-h-screen flex">
             {/* Left side - Hero Image */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-400 to-blue-500 items-center justify-center p-12">
-                <div className="text-center">
-                    <div className="mb-8">
-                        <svg className="w-32 h-32 mx-auto text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2M12 7.5L11.45 9.5L9.5 10L11.45 10.5L12 12.5L12.55 10.5L14.5 10L12.55 9.5L12 7.5Z" />
-                        </svg>
-                    </div>
-                    <h1 className="text-4xl font-bold text-white mb-4">Recycle Together</h1>
-                    <p className="text-lg text-white/90">Bergabunglah dalam gerakan daur ulang untuk bumi yang lebih hijau</p>
-                </div>
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-400 justify-center p-12 relative">
+                <img
+                    src="/hero.png"
+                    alt="Recycling and environment"
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    className="absolute inset-0 w-full h-full"
+                />
+                
             </div>
 
             {/* Right side - Forms */}
