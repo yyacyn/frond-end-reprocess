@@ -6,7 +6,7 @@ import PocketBase from "pocketbase"
 
 const pb = new PocketBase("http://202.10.47.143:8090")
 
-export default function ReducePage() {
+export default function ReusePage() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const wasteId = searchParams.get("id")
@@ -55,13 +55,13 @@ export default function ReducePage() {
             if (textContent) {
                 const parsedData = JSON.parse(textContent)
 
-                if (action === "reduce" && parsedData[1]) {
-                    const reduceData = parsedData[1]
-                    setRecommendations([reduceData])
-                    setSelectedRecommendation(reduceData)
+                if (action === "reuse" && parsedData[1]) {
+                    const reuseData = parsedData[1]
+                    setRecommendations([reuseData])
+                    setSelectedRecommendation(reuseData)
 
                     // Create action immediately
-                    createAction(reduceData)
+                    createAction(reuseData)
                 } else {
                     setRecommendations(parsedData)
                 }
@@ -78,9 +78,9 @@ export default function ReducePage() {
         try {
             const actionData = {
                 waste: wasteId,
-                category: "reduce",
+                category: "reuse",
                 description: recommendation.description,
-                insight: recommendation.insight || "AI-generated waste reduction recommendation",
+                insight: recommendation.insight || "AI-generated waste reusage recommendation",
                 benefit: recommendation.benefit,
                 point: recommendation.point,
                 quantity: recommendation.quantity_kg,
@@ -88,7 +88,7 @@ export default function ReducePage() {
                 tasks: JSON.stringify([
                     {
                         title: "Research Best Practices",
-                        description: `Research best practices for ${recommendation.category || "waste reduction"} related to this material.`,
+                        description: `Research best practices for ${recommendation.category || "waste reusage"} related to this material.`,
                         estimated_days: 2
                     },
                     {
@@ -98,12 +98,12 @@ export default function ReducePage() {
                     },
                     {
                         title: "Track Progress",
-                        description: "Create a tracking system to monitor the impact of your waste reduction efforts.",
+                        description: "Create a tracking system to monitor the impact of your waste reusage efforts.",
                         estimated_days: 7
                     },
                     {
                         title: "Implement Changes",
-                        description: "Begin implementing the waste reduction strategy in your daily routine.",
+                        description: "Begin implementing the waste reusage strategy in your daily routine.",
                         estimated_days: 14
                     },
                     {
@@ -211,7 +211,7 @@ export default function ReducePage() {
                 <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-base-200 to-base-300">
                     <div className="text-center">
                         <div className="loading loading-spinner loading-lg text-primary mb-4"></div>
-                        <p className="text-xl font-semibold text-base-content">Generating waste reduction recommendations...</p>
+                        <p className="text-xl font-semibold text-base-content">Generating waste reusage recommendations...</p>
                         <p className="text-base-content/60 mt-2">This may take a few moments</p>
                     </div>
                 </div>
@@ -247,7 +247,7 @@ export default function ReducePage() {
                     <div className="text-center mb-8">
                         <div className="flex items-center justify-start gap-3 mb-4">
                             <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                                Reduce
+                                reuse
                             </h1>
                         </div>
                     </div>
@@ -356,7 +356,7 @@ export default function ReducePage() {
                                         >
                                             <div className="card-body">
                                                 <div className="flex items-start justify-between mb-4">
-                                                    <h3 className="text-xl font-bold text-green-800">Reduction Strategy #{index + 1}</h3>
+                                                    <h3 className="text-xl font-bold text-green-800">Reusage Strategy #{index + 1}</h3>
                                                     <div className="badge badge-success gap-1">
                                                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                             <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
@@ -388,7 +388,7 @@ export default function ReducePage() {
                                                         </div>
                                                         <div className="bg-white/70 p-3 rounded-lg text-center">
                                                             <div className="text-2xl font-bold text-green-600">{recommendation.quantity_kg}kg</div>
-                                                            <div className="text-sm text-green-700">Reduction Target</div>
+                                                            <div className="text-sm text-green-700">Reusage Target</div>
                                                         </div>
                                                     </div>
 
@@ -438,7 +438,7 @@ export default function ReducePage() {
                                                     </div>
                                                     <div className="ml-3">
                                                         <p className="text-sm text-yellow-700">
-                                                            To earn your points, please describe in detail how you've implemented the waste reduction strategy.
+                                                            To earn your points, please describe in detail how you've implemented the waste reusage strategy.
                                                             Include specific actions taken, challenges faced, and results achieved.
                                                         </p>
                                                     </div>
@@ -449,7 +449,7 @@ export default function ReducePage() {
                                                 <h3 className="text-lg font-semibold text-base-content mb-2">Your Implementation Details</h3>
                                                 <textarea
                                                     className="textarea textarea-bordered w-full h-48 text-[#000000]"
-                                                    placeholder="Describe in detail how you've implemented this waste reduction strategy. Include specific steps taken, methods used, challenges faced, and any measurable results (e.g., 'I reduced my plastic consumption by 30% by...', 'I implemented a composting system that processes 2kg of waste weekly...', etc.)"
+                                                    placeholder="Describe in detail how you've implemented this waste reusage strategy. Include specific steps taken, methods used, challenges faced, and any measurable results (e.g., 'I reused my plastic consumption by 30% by...', 'I implemented a composting system that processes 2kg of waste weekly...', etc.)"
                                                     value={validationText}
                                                     onChange={(e) => setValidationText(e.target.value)}
                                                 ></textarea>
@@ -504,7 +504,7 @@ export default function ReducePage() {
                                         <div className="text-6xl mb-4">🎉</div>
                                         <h3 className="text-2xl font-bold text-success mb-2">Task Successfully Validated!</h3>
                                         <p className="text-lg text-base-content/70 mb-6">
-                                            Congratulations! Your waste reduction efforts have been validated and you've earned impact points.
+                                            Congratulations! Your waste reusage efforts have been validated and you've earned impact points.
                                         </p>
 
                                         <div className="stats shadow bg-success/10 mx-auto mb-6">
@@ -523,8 +523,8 @@ export default function ReducePage() {
                                                 <div>
                                                     <h3 className="font-bold text-blue-800">Complete more tasks for additional points!</h3>
                                                     <p className="text-sm text-blue-600">
-                                                        You've successfully reduced waste. Want to earn more impact points?
-                                                        Try completing additional waste reduction tasks.
+                                                        You've successfully reused waste. Want to earn more impact points?
+                                                        Try completing additional waste reusage tasks.
                                                     </p>
                                                 </div>
                                             </div>

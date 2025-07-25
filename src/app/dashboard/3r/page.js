@@ -44,7 +44,7 @@ const ThreeRPage = () => {
             }
 
             // Fetch waste items where the `user` field matches the current user's ID
-            const result = await pb.collection("wastes").getList(1, 30, {
+            const result = await pb.collection("stocks").getList(1, 30, {
                 filter: `user = "${userId}"`,
             });
 
@@ -126,7 +126,7 @@ const ThreeRPage = () => {
                     {/* Header Section */}
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div>
-                            <h1 className="text-4xl font-bold text-base-content mb-2">Recycle, Reduce, Reuse my Waste</h1>
+                            <h1 className="text-4xl font-bold text-base-content mb-2">Recycle, Reduce, Reuse Waste</h1>
                             <p className="text-lg text-base-content/70">Start turning your trash into treasure</p>
                         </div>
                     </div>
@@ -136,7 +136,6 @@ const ThreeRPage = () => {
                         <div className="card-body p-6">
                             <div className="flex justify-between mb-6">
                                 <h2 className="card-title text-2xl text-base-content">Waste Inventory</h2>
-                                <span className="font-semibold bg-primary px-5 py-2 rounded-xl text-[#ffffff]">{wasteData.length} Items</span>
                             </div>
                             {wasteData.length === 0 ? (
                                 <div className="text-center py-12">
@@ -171,7 +170,7 @@ const ThreeRPage = () => {
                                                     <td className="w-20">
                                                         {item.images && item.images.length > 0 ? (
                                                             <img
-                                                                src={`http://172.19.79.163:8090/api/files/wastes/${item.id}/${item.images[0]}`}
+                                                                src={`http://202.10.47.143:8090/api/files/wastes/${item.id}/${item.images[0]}`}
                                                                 alt={item.name}
                                                                 className="rounded-md w-16 h-16 object-cover"
                                                             />
@@ -209,7 +208,7 @@ const ThreeRPage = () => {
 
                                                     {/* Quantity */}
                                                     <td className="text-center font-semibold text-secondary">
-                                                        {item.quantity}
+                                                        {item.stock_quantity}
                                                     </td>
 
                                                     {/* Status */}
@@ -235,8 +234,18 @@ const ThreeRPage = () => {
                                                     <td>
                                                         <div className="flex justify-center items-center gap-2">
                                                             <button
-                                                                className="btn btn-s btn-outline btn-primary items-center px-5 "
-                                                                onClick={() => handleEdit(item)}><FaRecycle />3R</button>
+                                                                className={`btn btn-s btn-outline btn-primary items-center px-5 ${item.on_sale ? "btn-disabled" : ""}`}
+                                                                onClick={() => {
+                                                                    if (item.on_sale) {
+                                                                        // Show a pop-up if the item is on sale
+                                                                        alert("This item is currently on sale and cannot be processed for 3R actions.");
+                                                                    } else {
+                                                                        handleEdit(item);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <FaRecycle /> 3R
+                                                            </button>
                                                         </div>
                                                     </td>
                                                 </tr>

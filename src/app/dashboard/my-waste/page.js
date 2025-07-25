@@ -42,7 +42,7 @@ const MyWaste = () => {
             }
 
             // Fetch waste items where the `user` field matches the current user's ID
-            const result = await pb.collection("wastes").getList(1, 30, {
+            const result = await pb.collection("stocks").getList(1, 30, {
                 filter: `user = "${userId}"`,
             });
 
@@ -203,6 +203,7 @@ const MyWaste = () => {
 
         try {
             await pb.collection("wastes").delete(id);
+            await pb.collection("stocks").delete(id);
 
             // Show success toast
             document.getElementById("success-delete-toast").classList.remove("hidden");
@@ -288,7 +289,7 @@ const MyWaste = () => {
                             <div className="stat-figure text-info text-3xl">⚖️</div>
                             <div className="stat-title text-info/70">Total Weight</div>
                             <div className="stat-value text-info text-2xl">
-                                {wasteData.reduce((sum, item) => sum + (Number.parseFloat(item.quantity) || 0), 0).toFixed(1)}kg
+                                {wasteData.reduce((sum, item) => sum + (Number.parseFloat(item.stock_quantity) || 0), 0).toFixed(1)}kg
                             </div>
                         </div>
                     </div>
@@ -331,7 +332,7 @@ const MyWaste = () => {
                                                     <td className="w-20">
                                                         {item.images && item.images.length > 0 ? (
                                                             <img
-                                                                src={`http://172.19.79.163:8090/api/files/wastes/${item.id}/${item.images[0]}`}
+                                                                src={`http://202.10.47.143:8090/api/files/wastes/${item.id}/${item.images[0]}`}
                                                                 alt={item.name}
                                                                 className="rounded-md w-16 h-16 object-cover"
                                                             />
@@ -369,7 +370,7 @@ const MyWaste = () => {
 
                                                     {/* Quantity */}
                                                     <td className="text-center font-semibold text-secondary">
-                                                        {item.quantity}
+                                                        {item.stock_quantity}
                                                     </td>
 
                                                     {/* Status */}
@@ -435,7 +436,7 @@ const MyWaste = () => {
                                                 <td colSpan="8" className="bg-base-200">
                                                     <div className="flex justify-between items-center text-sm">
                                                         <span>Total items: <strong>{wasteData.length}</strong></span>
-                                                        <span>Total weight: <strong>{wasteData.reduce((sum, item) => sum + (Number.parseFloat(item.quantity) || 0), 0).toFixed(1)}kg</strong></span>
+                                                        <span>Total weight: <strong>{wasteData.reduce((sum, item) => sum + (Number.parseFloat(item.stock_quantity) || 0), 0).toFixed(1)}kg</strong></span>
                                                         <span>Items on sale: <strong>{wasteData.filter((item) => item.on_sale).length}</strong></span>
                                                         <span>Last updated: <strong>{new Date().toLocaleDateString()}</strong></span>
                                                     </div>

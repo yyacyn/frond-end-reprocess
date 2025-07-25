@@ -5,15 +5,14 @@ import Sidebar from "../components/sidebar"
 import PocketBase from 'pocketbase';
 import { FaMedal } from "react-icons/fa";
 
-// const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
-// const pb = new PocketBase('http://172.19.79.163:8090');
 const pb = new PocketBase('http://202.10.47.143:8090');
 
 const Dashboard = () => {
-
     // Theme state
     const [theme, setTheme] = useState("dark")
     const [user, setUser] = useState(null);
+    const [points, setPoints] = useState(0); // State to store user points
+    const [salesData, setSalesData] = useState([]); // State to store user's sale data
 
     // Initialize theme and user data
     useEffect(() => {
@@ -25,9 +24,126 @@ const Dashboard = () => {
 
         // Get logged-in user
         if (pb.authStore.isValid) {
-            setUser(pb.authStore.model); // Retrieve user data from authStore
+            const loggedInUser = pb.authStore.model;
+            setUser(loggedInUser);
+            fetchUserPoints(loggedInUser.id); // Fetch points for the logged-in user
+            fetchUserSales(loggedInUser.id); // Fetch sales data for the logged-in user
         }
     }, []);
+
+    // Add this new state to your existing useState declarations
+    const [monthlyPoints, setMonthlyPoints] = useState([]);
+
+    // Add this new function to fetch monthly points data
+    const fetchMonthlyPoints = async () => {
+        try {
+            const response = await fetch("http://202.10.47.143:8090/api/tracks/monthly");
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setMonthlyPoints(data);
+        } catch (error) {
+            console.error("Error fetching monthly points:", error);
+            setMonthlyPoints([]); // Set to empty array on error
+        }
+    };
+
+    // Update your useEffect to include this function
+    useEffect(() => {
+        // Set theme
+        const savedTheme = localStorage.getItem("theme") ||
+            (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+        setTheme(savedTheme);
+        document.documentElement.setAttribute("data-theme", savedTheme);
+
+        // Get logged-in user
+        if (pb.authStore.isValid) {
+            const loggedInUser = pb.authStore.model;
+            setUser(loggedInUser);
+            fetchUserPoints(loggedInUser.id);
+            fetchUserSales(loggedInUser.id);
+            fetchMonthlyPoints();
+            fetchTrackerData(loggedInUser.id); // Add this new function call
+        }
+    }, []);
+
+    // Calculate points report metrics
+    const totalPoints = monthlyPoints.reduce((sum, month) => sum + month.points, 0);
+    const peakMonthPoints = monthlyPoints.length > 0
+        ? Math.max(...monthlyPoints.map(month => month.points))
+        : 0;
+    const peakMonth = monthlyPoints.find(month => month.points === peakMonthPoints)?.label || "None";
+    const averageMonthlyPoints = monthlyPoints.length > 0
+        ? Math.round(totalPoints / monthlyPoints.filter(month => month.points > 0).length || 1)
+        : 0;
+
+    // Add this new CustomTooltip for points chart
+    const PointsCustomTooltip = ({ active, payload, label }) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-base-100 p-4 rounded-lg shadow-lg border border-base-300">
+                    <p className="font-semibold text-base-content">{label}</p>
+                    {payload.map((entry, index) => (
+                        <p key={index} className="text-sm" style={{ color: entry.color }}>
+                            {`${entry.name}: ${entry.value} points`}
+                        </p>
+                    ))}
+                </div>
+            );
+        }
+        return null;
+    };
+
+    const fetchUserPoints = async (userId) => {
+        try {
+            const records = await pb.collection("points").getList(1, 1, {
+                filter: `user_id="${userId}"`, // Filter by user ID
+            });
+
+            if (records.items.length > 0) {
+                setPoints(records.items[0].total_points); // Assuming "points" is the field name
+            } else {
+                setPoints(0); // Default to 0 if no points record is found
+            }
+        } catch (error) {
+            console.error("Error fetching user points:", error);
+            setPoints(0); // Handle error by setting points to 0
+        }
+    };
+
+    const fetchUserSales = async (userId) => {
+        try {
+            const salesRecords = await pb.collection("sale").getList(1, 50, { // Fetch more if needed
+                filter: `user="${userId}"`, // Filter by the user ID
+                sort: 'created', // Sort by creation date
+            });
+
+            // Process sales data for the report
+            const processedSales = salesRecords.items.map(sale => ({
+                ...sale,
+                date: new Date(sale.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                day: new Date(sale.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), // Using 'day' for XAxis
+            }));
+
+            // Group sales data by date to aggregate quantity sold per day
+            const aggregatedSales = processedSales.reduce((acc, sale) => {
+                const date = sale.day;
+                if (!acc[date]) {
+                    acc[date] = { day: date, sold: 0, bought: 0 }; // Initialize bought to 0 for this report
+                }
+                acc[date].sold += sale.quantity; // Sum quantity for 'sold'
+                return acc;
+            }, {});
+
+            setSalesData(Object.values(aggregatedSales)); // Convert back to array for Recharts
+        } catch (error) {
+            console.error("Error fetching user sales:", error);
+            setSalesData([]); // Handle error by setting sales data to empty
+        }
+    };
 
     // Theme toggle handler
     const toggleTheme = () => {
@@ -37,53 +153,100 @@ const Dashboard = () => {
         document.documentElement.setAttribute("data-theme", newTheme)
     }
 
-    const trackerData = [
+    // Add these new state variables
+    const [trackerData, setTrackerData] = useState([
         {
             icon: "♻️",
-            value: "23 kg",
+            value: "0 kg",
             label: "Waste Recycled",
             description: "This month",
             statColor: "stat-value text-emerald-600",
             cardColor: "bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-200",
+            category: "recycle"
         },
         {
             icon: "⬇️",
-            value: "45 kg",
+            value: "0 kg",
             label: "Waste Reduced",
             description: "This month",
             statColor: "stat-value text-blue-600",
             cardColor: "bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200",
+            category: "reduce"
         },
         {
             icon: "🪴",
-            value: "24 kg",
+            value: "0 kg",
             label: "Waste Reused",
             description: "This month",
             statColor: "stat-value text-amber-600",
             cardColor: "bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-200",
+            category: "reuse"
         },
         {
             icon: "🏆",
-            value: "12",
+            value: "0",
             label: "Task Completed",
             description: "This month",
             statColor: "stat-value text-purple-600",
             cardColor: "bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200",
+            category: "all"
         },
-    ];
+    ]);
 
-    const timelineData = [
-        { date: "2025-07-15", sold: 25, bought: 15, day: "Jul 15" },
-        { date: "2025-07-16", sold: 35, bought: 25, day: "Jul 16" },
-        { date: "2025-07-17", sold: 28, bought: 18, day: "Jul 17" },
-        { date: "2025-07-18", sold: 42, bought: 32, day: "Jul 18" },
-        { date: "2025-07-19", sold: 38, bought: 28, day: "Jul 19" },
-        { date: "2025-07-20", sold: 30, bought: 20, day: "Jul 20" },
-        { date: "2025-07-21", sold: 50, bought: 40, day: "Jul 21" },
-        { date: "2025-07-22", sold: 45, bought: 35, day: "Jul 22" },
-        { date: "2025-07-23", sold: 52, bought: 42, day: "Jul 23" },
-        { date: "2025-07-24", sold: 48, bought: 38, day: "Jul 24" },
-    ]
+    // Add this new function to fetch tracker data
+    const fetchTrackerData = async (userId) => {
+        try {
+            // Get current date info to filter for current month
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+            // Fetch completed actions for this user
+            const actionsResponse = await pb.collection("actions").getList(1, 100, {
+                filter: `finished=true`, // Only get finished actions
+                sort: "-created", // Sort by most recent first
+            });
+
+            // Count total completed tasks
+            const completedTasksCount = actionsResponse.items.length;
+
+            // Group by category and calculate total quantities
+            const categoryTotals = {
+                recycle: 0,
+                reduce: 0,
+                reuse: 0
+            };
+
+            // Process the actions data
+            actionsResponse.items.forEach(action => {
+                if (categoryTotals.hasOwnProperty(action.category)) {
+                    categoryTotals[action.category] += action.quantity || 0;
+                }
+            });
+
+            // Update the tracker data with actual values
+            setTrackerData(prevData => {
+                return prevData.map(item => {
+                    if (item.category === "all") {
+                        return {
+                            ...item,
+                            value: completedTasksCount.toString()
+                        };
+                    } else if (categoryTotals.hasOwnProperty(item.category)) {
+                        return {
+                            ...item,
+                            value: `${categoryTotals[item.category]} kg`
+                        };
+                    }
+                    return item;
+                });
+            });
+        } catch (error) {
+            console.error("Error fetching tracker data:", error);
+        }
+    };
+
+    // Use the fetched salesData for the timeline graph
+    const timelineData = salesData; // Now this will be dynamic based on user sales
 
     const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
@@ -101,6 +264,11 @@ const Dashboard = () => {
         return null
     }
 
+    // Calculate sales report metrics
+    const totalWasteSold = salesData.reduce((sum, item) => sum + item.sold, 0);
+    const peakSold = salesData.length > 0 ? Math.max(...salesData.map((item) => item.sold)) : 0;
+    const averageSold = salesData.length > 0 ? Math.round(totalWasteSold / salesData.length) : 0;
+
     return (
         <div className="flex h-screen">
             {/* Sidebar */}
@@ -115,7 +283,7 @@ const Dashboard = () => {
                             Welcome, {user?.name || user?.email || "User"}!
                         </h1>
                         <p className="text-xl text-base-content/70 flex items-center gap-2">
-                            My points <FaMedal /> <span className="font-semibold text-[#2DC653]">1234</span>
+                            My points <FaMedal /> <span className="font-semibold text-[#2DC653]">{points}</span>
                         </p>
                     </div>
 
@@ -130,21 +298,21 @@ const Dashboard = () => {
                             </div>
                         ))}
                     </div>
-
-                    {/* Timeline Graph Section */}
+                    {/* Sales Report Section */}
+                    ---
                     <div className="card bg-base-100 shadow-2xl border border-base-300/50">
                         <div className="card-body p-8">
                             <div className="flex items-center justify-between mb-8">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-4 bg-gradient-to-r from-emerald-400/20 via-blue-500/20 to-purple-600/20 rounded-full animate-pulse">
-                                        <div className="text-4xl">📈</div>
+                                    <div className="p-4 bg-gradient-to-r from-green-400/20 via-cyan-500/20 to-lime-600/20 rounded-full animate-pulse">
+                                        <div className="text-4xl">💰</div>
                                     </div>
                                     <div>
-                                        <h2 className="card-title text-4xl text-base-content bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-600 bg-clip-text">
-                                            Waste Transaction Timeline
+                                        <h2 className="card-title text-4xl text-base-content bg-gradient-to-r from-green-500 via-cyan-500 to-lime-600 bg-clip-text">
+                                            My Sales Report
                                         </h2>
                                         <p className="text-base-content/70 text-lg">
-                                            Daily waste sold and bought over the past 10 days (in kg)
+                                            Overview of your waste sales activities
                                         </p>
                                     </div>
                                 </div>
@@ -152,10 +320,6 @@ const Dashboard = () => {
                                     <div className="flex items-center gap-3">
                                         <div className="w-5 h-5 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-400/50"></div>
                                         <span className="text-sm font-semibold text-base-content">Waste Sold</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 shadow-lg shadow-blue-400/50"></div>
-                                        <span className="text-sm font-semibold text-base-content">Waste Bought</span>
                                     </div>
                                 </div>
                             </div>
@@ -171,37 +335,11 @@ const Dashboard = () => {
                                                 <stop offset="100%" stopColor="#047857" />
                                             </linearGradient>
 
-                                            {/* Gradient definitions for bought line */}
-                                            <linearGradient id="boughtLineGradient" x1="0" y1="0" x2="1" y2="0">
-                                                <stop offset="0%" stopColor="#3b82f6" />
-                                                <stop offset="50%" stopColor="#2563eb" />
-                                                <stop offset="100%" stopColor="#1d4ed8" />
-                                            </linearGradient>
-
                                             {/* Area gradients */}
                                             <linearGradient id="soldAreaGradient" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
                                                 <stop offset="95%" stopColor="#10b981" stopOpacity={0.05} />
                                             </linearGradient>
-
-                                            <linearGradient id="boughtAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05} />
-                                            </linearGradient>
-
-                                            {/* Glow filter */}
-                                            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                                                <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-                                                <feMerge>
-                                                    <feMergeNode in="coloredBlur" />
-                                                    <feMergeNode in="SourceGraphic" />
-                                                </feMerge>
-                                            </filter>
-
-                                            {/* Drop shadow for dots */}
-                                            <filter id="dropshadow" x="-50%" y="-50%" width="200%" height="200%">
-                                                <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3" />
-                                            </filter>
                                         </defs>
 
                                         <CartesianGrid strokeDasharray="3 3" stroke="#F2b8f0" />
@@ -214,6 +352,7 @@ const Dashboard = () => {
                                             axisLine={false}
                                             tick={{ fill: "oklch(var(--bc) / 0.8)" }}
                                             dy={15}
+                                            interval={0}  // Ensure all 7 days are displayed
                                         />
 
                                         <YAxis
@@ -257,14 +396,12 @@ const Dashboard = () => {
                                                 stroke: "#10b981",
                                                 strokeWidth: 4,
                                                 r: 10,
-
                                             }}
                                             activeDot={{
                                                 r: 14,
                                                 stroke: "#10b981",
                                                 strokeWidth: 5,
                                                 fill: "#ffffff",
-
                                                 style: {
                                                     boxShadow: "0 0 20px #10b981",
                                                 },
@@ -273,145 +410,39 @@ const Dashboard = () => {
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
                                             connectNulls={true}
-
-                                        />
-
-                                        {/* Bought line with enhanced styling */}
-                                        <Line
-                                            type="monotone"
-                                            dataKey="bought"
-                                            stroke="url(#boughtLineGradient)"
-                                            strokeWidth={6}
-                                            dot={{
-                                                fill: "#ffffff",
-                                                stroke: "#3b82f6",
-                                                strokeWidth: 4,
-                                                r: 10,
-
-                                            }}
-                                            activeDot={{
-                                                r: 14,
-                                                stroke: "#3b82f6",
-                                                strokeWidth: 5,
-                                                fill: "#ffffff",
-
-                                                style: {
-                                                    boxShadow: "0 0 20px #3b82f6",
-                                                },
-                                            }}
-                                            name="Waste Bought"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            connectNulls={true}
-
                                         />
                                     </LineChart>
                                 </ResponsiveContainer>
                             </div>
 
-                            {/* Graph Statistics */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
+                            {/* Sales Report Statistics */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
                                 <div className="stat bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border-2 border-emerald-200 shadow-lg">
-                                    <div className="stat-title text-emerald-700 font-semibold">Peak Sold</div>
+                                    <div className="stat-title text-emerald-700 font-semibold">Total Waste Sold</div>
                                     <div className="stat-value text-emerald-600 text-3xl font-bold">
-                                        {Math.max(...timelineData.map((item) => item.sold))}kg
+                                        {totalWasteSold}kg
                                     </div>
-                                    <div className="stat-desc text-emerald-600/70">Highest single day</div>
+                                    <div className="stat-desc text-emerald-600/70">Overall sales</div>
                                 </div>
 
                                 <div className="stat bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border-2 border-blue-200 shadow-lg">
-                                    <div className="stat-title text-blue-700 font-semibold">Peak Bought</div>
+                                    <div className="stat-title text-blue-700 font-semibold">Peak Daily Sale</div>
                                     <div className="stat-value text-blue-600 text-3xl font-bold">
-                                        {Math.max(...timelineData.map((item) => item.bought))}kg
+                                        {peakSold}kg
                                     </div>
-                                    <div className="stat-desc text-blue-600/70">Highest single day</div>
+                                    <div className="stat-desc text-blue-600/70">Highest single day sale</div>
                                 </div>
 
                                 <div className="stat bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border-2 border-amber-200 shadow-lg">
-                                    <div className="stat-title text-amber-700 font-semibold">Avg Sold</div>
+                                    <div className="stat-title text-amber-700 font-semibold">Average Daily Sale</div>
                                     <div className="stat-value text-amber-600 text-3xl font-bold">
-                                        {Math.round(timelineData.reduce((sum, item) => sum + item.sold, 0) / timelineData.length)}kg
+                                        {averageSold}kg
                                     </div>
                                     <div className="stat-desc text-amber-600/70">Daily average</div>
-                                </div>
-
-                                <div className="stat bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border-2 border-purple-200 shadow-lg">
-                                    <div className="stat-title text-purple-700 font-semibold">Net Flow</div>
-                                    <div className="stat-value text-purple-600 text-3xl font-bold">
-                                        +{timelineData.reduce((sum, item) => sum + (item.sold - item.bought), 0)}kg
-                                    </div>
-                                    <div className="stat-desc text-purple-600/70">Total difference</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Summary Cards */}
-                    {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="card bg-gradient-to-r from-success to-success-focus text-success-content shadow-2xl">
-                            <div className="card-body">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-success-content/80 text-lg">Total Waste Sold</p>
-                                        <p className="text-4xl font-bold">{timelineData.reduce((sum, item) => sum + item.sold, 0)}kg</p>
-                                    </div>
-                                    <div className="text-6xl opacity-60">📤</div>
-                                </div>
-                                <div className="card-actions justify-end">
-                                    <div className="badge badge-success-content/20 text-success-content">Revenue Generated</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="card bg-gradient-to-r from-info to-info-focus text-info-content shadow-2xl">
-                            <div className="card-body">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-info-content/80 text-lg">Total Waste Bought</p>
-                                        <p className="text-4xl font-bold">{timelineData.reduce((sum, item) => sum + item.bought, 0)}kg</p>
-                                    </div>
-                                    <div className="text-6xl opacity-60">📥</div>
-                                </div>
-                                <div className="card-actions justify-end">
-                                    <div className="badge badge-info-content/20 text-info-content">Materials Acquired</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div> */}
-
-                    {/* Additional Insights */}
-                    {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="card bg-base-100 shadow-xl">
-                            <div className="card-body text-center">
-                                <div className="text-4xl mb-2">🎯</div>
-                                <h3 className="card-title justify-center text-primary">Net Balance</h3>
-                                <p className="text-2xl font-bold text-accent">
-                                    +{timelineData.reduce((sum, item) => sum + (item.sold - item.bought), 0)}kg
-                                </p>
-                                <p className="text-base-content/60">Waste processed efficiently</p>
-                            </div>
-                        </div>
-
-                        <div className="card bg-base-100 shadow-xl">
-                            <div className="card-body text-center">
-                                <div className="text-4xl mb-2">📊</div>
-                                <h3 className="card-title justify-center text-secondary">Avg Daily</h3>
-                                <p className="text-2xl font-bold text-secondary">
-                                    {Math.round(timelineData.reduce((sum, item) => sum + item.sold, 0) / timelineData.length)}kg
-                                </p>
-                                <p className="text-base-content/60">Sold per day</p>
-                            </div>
-                        </div>
-
-                        <div className="card bg-base-100 shadow-xl">
-                            <div className="card-body text-center">
-                                <div className="text-4xl mb-2">🌍</div>
-                                <h3 className="card-title justify-center text-accent">Impact Score</h3>
-                                <p className="text-2xl font-bold text-success">A+</p>
-                                <p className="text-base-content/60">Environmental rating</p>
-                            </div>
-                        </div>
-                    </div> */}
                 </div>
             </div>
         </div>
