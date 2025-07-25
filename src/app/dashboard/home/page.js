@@ -140,7 +140,7 @@ const Dashboard = () => {
                                         <div className="text-4xl">📈</div>
                                     </div>
                                     <div>
-                                        <h2 className="card-title text-4xl text-base-content bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+                                        <h2 className="card-title text-4xl text-base-content bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-600 bg-clip-text">
                                             Waste Transaction Timeline
                                         </h2>
                                         <p className="text-base-content/70 text-lg">
